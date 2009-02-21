@@ -76,7 +76,6 @@ class WhooshManager(models.Manager):
     
     def post_save_callback(self, sender, instance, created, **kwargs):
         dct = dict([(f, unicode(getattr(instance, f))) for f in self.fields])
-        print dct
         writer = self.index.writer()
         if created:
             writer.add_document(**dct)
