@@ -7,7 +7,7 @@ from django.db.models.signals import post_save, post_delete, class_prepared
 
 from whoosh import store
 from whoosh.fields import Schema, STORED, ID, KEYWORD, TEXT
-from whoosh.index import Index, IndexError
+from whoosh.index import Index, IndexError, EmptyIndexError
 from whoosh.qparser import QueryParser
 
 try:
@@ -53,7 +53,7 @@ class WhooshManager(models.Manager):
         self.storage = store.FileStorage(STORAGE_DIR)
         try:
             self.index = Index(self.storage)
-        except IndexError:
+        except (IndexError, EmptyIndexError):
             self.index = None
         super(WhooshManager, self).__init__(*args, **kwargs)
     
@@ -76,6 +76,7 @@ class WhooshManager(models.Manager):
     
     def post_save_callback(self, sender, instance, created, **kwargs):
         dct = dict([(f, unicode(getattr(instance, f))) for f in self.fields])
+        self.index = self.index.refresh()
         writer = self.index.writer()
         if created:
             writer.add_document(**dct)
