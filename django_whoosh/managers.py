@@ -43,8 +43,8 @@ field_mapping = {
 }
 
 class WhooshManager(models.Manager):
-    def __init__(self, default, *args, **kwargs):
-        self.default = default
+    def __init__(self, *args, **kwargs):
+        self.default = kwargs.pop("default",None)
         self.parser = None
         self.fields = kwargs.pop('fields', []) + ['id']
         self.real_time = kwargs.pop('real_time', True)
